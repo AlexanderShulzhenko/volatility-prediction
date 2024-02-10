@@ -1,0 +1,29 @@
+name: Continous integration
+on:
+  push:
+    branches:
+      - main
+jobs:
+  pre_commit_hooks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        hook:
+          - end-of-file-fixer
+          - trailing-whitespace
+          - nbstripout
+          - ruff
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions`setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install libraries for pre-commit
+        run: pip install pre-commit tomli
+
+      - name: Run pre-commit hooks
+        run: pre-commit run ${{ matrix.hook }} --all-files
