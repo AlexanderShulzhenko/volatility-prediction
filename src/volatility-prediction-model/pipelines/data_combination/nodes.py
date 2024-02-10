@@ -3,7 +3,7 @@ import typing as t
 import pandas as pd
 from pandera import check_output
 
-from .schemas.candlestick_data_schema import candlestick_data_schema
+from ..schemas.candlestick_data_schema import candlestick_data_schema
 
 
 def _convert_to_date(x: pd.Series) -> pd.Series:
