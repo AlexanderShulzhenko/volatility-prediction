@@ -8,7 +8,10 @@ import pandas as pd
 import scipy
 import tensorflow as tf
 from numba import float64, jit, vectorize
+from pandera import check_output
 from tqdm import tqdm
+
+from ..schemas.trades_data_schema import trades_data_schema
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +151,7 @@ def fe_stochastic(
 
     test_res = []
     for i in tqdm(idx):
-        # get data for last 24 hours and scale it
+        # Get data for last 24 hours and scale it
         raw_path = combined["close"][i - 95 : i + 1].values
         raw_path_mean = raw_path.mean()
         raw_path_std = raw_path.std()
@@ -158,7 +161,7 @@ def fe_stochastic(
         res = [combined["close_time"][i]]
 
         for k_type in inv_cov_dct.keys():
-            # find p_value of Kolmogorov-Smirnov test for each lengthscale
+            # Find p_value of Kolmogorov-Smirnov test for each lengthscale
             p_vals = []
             for ls in range(5, 110, 5):
                 inv_cov = inv_cov_dct[k_type][ls]
@@ -196,11 +199,12 @@ def fe_trades(
     percentile90 = []
 
     for _partition_key, partition_load_func in tqdm(sorted(partitioned_input.items())):
-        trades_data = partition_load_func()
+        # Unwrap the decorator to check the output, increases runtime: might be removed
+        trades_data = check_output(trades_data_schema)(partition_load_func)()
         trades_data["returns"] = trades_data["Price"].pct_change()
         trades_data["dolAmount"] = trades_data["Price"] * trades_data["Quantity"]
 
-        # Stats
+        # Stats calculated for each trades data frame
         skews.append(trades_data["returns"].skew())
         kurtosises.append(trades_data["returns"].kurtosis())
         percentile90.append(trades_data["dolAmount"].quantile(0.9))

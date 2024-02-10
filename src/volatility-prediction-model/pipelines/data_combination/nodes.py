@@ -1,4 +1,4 @@
-import typing as t
+from typing import Any, Callable, Dict
 
 import pandas as pd
 from pandera import check_output
@@ -16,7 +16,7 @@ def _replace_value(x: pd.Series) -> pd.Series:
 
 @check_output(candlestick_data_schema)
 def concat_partitions(
-    partitioned_input: t.Dict[str, t.Callable[[], t.Any]]
+    partitioned_input: Dict[str, Callable[[], Any]]
 ) -> pd.DataFrame:
     result = pd.DataFrame()
     for _partition_key, partition_load_func in sorted(partitioned_input.items()):
