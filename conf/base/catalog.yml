@@ -1,0 +1,52 @@
+master_list:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/master_list.csv
+
+master_list_cleaned:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/master_list_cleaned.pq
+
+candlesticks_partitioned:
+  type: partitions.PartitionedDataset
+  path: data/01_raw/candlestick_data
+  dataset: pandas.CSVDataset
+  filename_suffix: ".csv"
+
+trades_partitioned:
+  type: partitions.PartitionedDataset
+  path: data/01_raw/trades_data
+  dataset: pandas.ParquetDataset
+  filename_suffix: ".parquet"
+
+concatenated_candlestick_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/concatenated_candlestick_data.pq
+
+features_candlestick_data:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/features_candlestick_data.pq
+
+features_indicators:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/features_indicators.pq
+
+features_stochastic:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/features_stochastic.pq
+
+features_trades:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/features_trades.pq
+
+feature_table:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/feature_table.pq
+
+clf:
+  type: pickle.PickleDataset
+  filepath: data/06_models/clf.pickle
+  versioned: false
+
+model_output_test:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_output_test.csv

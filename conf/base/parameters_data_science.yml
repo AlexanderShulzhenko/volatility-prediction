@@ -1,0 +1,19 @@
+model_options:
+  train_size: 2000
+  n_estimators: 50
+  max_depth: 4
+  min_child_samples: 30
+  random_state: 42
+  features:
+    - week_day
+    - hour
+    - Garman_Klass_HV_4
+    - returns_4
+    - bbw%
+    - coefs
+    - skews
+    - kurtosises
+    - percentile90
+    - p_value_KS_Matern32
+    - p_value_SW_Matern32
+    - lengthscale_OU

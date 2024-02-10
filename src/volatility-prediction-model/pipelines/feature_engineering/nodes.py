@@ -1,0 +1,221 @@
+import logging
+import typing as t
+
+import gpflow
+import numpy as np
+import pandas as pd
+import scipy
+import tensorflow as tf
+from numba import jit
+from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
+
+
+class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):
+    def K_r2(self, r2):
+        return self.variance * tf.exp(-tf.sqrt(r2))
+
+
+@jit(nopython=True)
+def line_fit(target_values: np.array, window_size: int) -> t.Tuple:
+    coefs = [np.nan] * window_size
+    r2s = [np.nan] * window_size
+
+    X = np.arange(window_size).reshape(-1, 1).astype("float")
+    X_pad = np.hstack((np.ones_like(X), X))
+    for i in range(window_size, len(target_values)):
+        y = target_values[i - window_size : i]
+        X_pad_t = X_pad.T
+        intercept, slope = np.dot(
+            np.dot(np.linalg.inv(np.dot(X_pad_t, X_pad)), X_pad_t), y
+        )
+        pred = X * slope + intercept
+
+        ss_t = (pred.ravel() - y) ** 2
+        ss_r = (y - y.mean()) ** 2
+        r2 = 1 - (ss_t.sum() / ss_r.sum())
+        coefs.append(slope)
+        r2s.append(r2)
+    return coefs, r2s
+
+
+def fe_candlestick_data(candlestick_data: pd.DataFrame) -> pd.DataFrame:
+    # Date/Time
+    candlestick_data["week_day"] = candlestick_data["open_time"].dt.dayofweek
+    candlestick_data["hour"] = candlestick_data["open_time"].dt.hour
+
+    # Price change
+    candlestick_data["returns_1"] = np.log(candlestick_data["close"].pct_change(1) + 1)
+    candlestick_data["returns_4"] = np.log(candlestick_data["close"].pct_change(4) + 1)
+
+    # Garman-Klass Historical Volatility
+    c = 2 * np.log(2) - 1
+    candlestick_data["GK_HV_inner"] = (
+        0.5 * (np.log(candlestick_data["high"] / candlestick_data["low"])) ** 2
+        - c * (np.log(candlestick_data["close"] / candlestick_data["open"])) ** 2
+    )
+    candlestick_data["Garman_Klass_HV_4"] = np.sqrt(
+        candlestick_data["GK_HV_inner"].rolling(4).mean()
+    )
+
+    return candlestick_data
+
+
+def fe_indicators(candlestick_data: pd.DataFrame) -> pd.DataFrame:
+    # MA
+    candlestick_data["MA_5"] = candlestick_data["close"].rolling(5).mean()
+    candlestick_data["MA_40"] = candlestick_data["close"].rolling(40).mean()
+    candlestick_data["MA_100"] = candlestick_data["close"].rolling(100).mean()
+
+    candlestick_data["MA_5_under_MA_40"] = np.where(
+        candlestick_data["MA_5"] < candlestick_data["MA_40"], 1, 0
+    )
+    candlestick_data["MA_5_under_MA_100"] = np.where(
+        candlestick_data["MA_5"] < candlestick_data["MA_100"], 1, 0
+    )
+
+    candlestick_data["MA_5_MA_100_ratio"] = (
+        candlestick_data["MA_5"] / candlestick_data["MA_40"]
+    )
+
+    # Bollinger Bands
+    candlestick_data["std_10"] = candlestick_data["close"].rolling(10).std()
+    candlestick_data["bbh"] = candlestick_data["MA_5"] + 2 * candlestick_data["std_10"]
+    candlestick_data["bbl"] = candlestick_data["MA_5"] - 2 * candlestick_data["std_10"]
+
+    candlestick_data["bbw%"] = (
+        candlestick_data["bbh"] - candlestick_data["bbl"]
+    ) / candlestick_data["MA_5"]
+
+    # Rolling Linear Regression
+    logger.info("Running Linear Regression")
+    coefs, r2s = line_fit(candlestick_data["close"].values, 10)
+    candlestick_data["coefs"] = coefs
+    candlestick_data["r2s"] = r2s
+
+    return candlestick_data
+
+
+def get_inv_cov() -> t.Dict:
+    inv_cov_dct = {}
+    Xplot = np.arange(0, 96, 1).astype(float)[:, None]
+    X = np.zeros((0, 1))
+    Y = np.zeros((0, 1))
+
+    kernels = {
+        "Matern": gpflow.kernels.Matern32,
+        "Ornstein_Uhlenbeck": Ornstein_Uhlenbeck,
+    }
+
+    for k_type in kernels.keys():
+        inv_cov_dct_k = {}
+        for ls in range(5, 110, 5):
+            k = kernels[k_type](lengthscales=ls, variance=1)
+            model = gpflow.models.GPR((X, Y), kernel=k)
+            _, cov = model.predict_f(Xplot, full_cov=True)
+
+            cov = cov[0, :, :].numpy()
+            inv_cov_dct_k[ls] = scipy.linalg.fractional_matrix_power(cov, -0.5)
+        inv_cov_dct[k_type] = inv_cov_dct_k
+
+    return inv_cov_dct
+
+
+def fe_stochastic(
+    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: t.Dict
+) -> pd.DataFrame:
+    combined = candlestick_data.merge(master_list, how="left", on="close_time")
+    idx = combined[combined["target"].notna()].index
+
+    test_res = []
+    for i in tqdm(idx):
+        # get data for last 24 hours and scale it
+        raw_path = combined["close"][i - 95 : i + 1].values
+        raw_path_mean = raw_path.mean()
+        raw_path_std = raw_path.std()
+        price_path = (raw_path - raw_path_mean) / raw_path_std
+
+        # Check for Matern and Ornstein-Uhlenbeck kernels
+        res = [combined["close_time"][i]]
+        for k_type in inv_cov_dct.keys():
+            # find p_value of Kolmogorov-Smirnov test for each lengthscale
+            p_vals = []
+            for ls in range(5, 110, 5):
+                standardized_path = inv_cov_dct[k_type][ls] @ price_path
+                sorted_path = np.sort(standardized_path.ravel())
+                normal_cdf = scipy.stats.norm.cdf(sorted_path, 0, 1)
+                edf = np.arange(1, len(sorted_path) + 1) / len(sorted_path)
+
+                p_value = np.exp(-max(abs(edf - normal_cdf)) ** 2 * len(sorted_path))
+                p_vals.append(p_value)
+
+            # Shapiro-Wilk second test on found lengthscale to verify
+            lengthscale = (np.argmax(p_vals) + 1) * 5
+            standardized_path = inv_cov_dct[k_type][lengthscale] @ price_path
+            p_value_shapiro = scipy.stats.shapiro(standardized_path).pvalue
+            res += [lengthscale, max(p_vals), p_value_shapiro]
+
+        test_res.append(res)
+
+    stochastic_features = pd.DataFrame(test_res)
+    stochastic_features.columns = [
+        "close_time",
+        "lengthscale_Matern32",
+        "p_value_KS_Matern32",
+        "p_value_SW_Matern32",
+        "lengthscale_OU",
+        "p_value_KS_OU",
+        "p_value_SW_OU",
+    ]
+    return stochastic_features
+
+
+def fe_trades(
+    master_list: pd.DataFrame, partitioned_input: t.Dict[str, t.Callable[[], t.Any]]
+) -> pd.DataFrame:
+    trades_features = master_list.drop(columns="target")
+
+    skews = []
+    kurtosises = []
+    percentile90 = []
+
+    for _partition_key, partition_load_func in tqdm(sorted(partitioned_input.items())):
+        trades_data = partition_load_func()
+        trades_data["returns"] = trades_data["Price"].pct_change()
+        trades_data["dolAmount"] = trades_data["Price"] * trades_data["Quantity"]
+
+        # Stats
+        skews.append(trades_data["returns"].skew())
+        kurtosises.append(trades_data["returns"].kurtosis())
+        percentile90.append(trades_data["dolAmount"].quantile(0.9))
+
+    trades_features["skews"] = skews
+    trades_features["kurtosises"] = kurtosises
+    trades_features["percentile90"] = percentile90
+
+    return trades_features
+
+
+def master_list_merge(
+    master_list: pd.DataFrame,
+    features_candlestick_data: pd.DataFrame,
+    features_indicators: pd.DataFrame,
+    features_stochastic: pd.DataFrame,
+    features_trades: pd.DataFrame,
+) -> pd.DataFrame:
+    combined_features = master_list
+    combined_features = combined_features.merge(
+        features_candlestick_data, how="left", on="close_time"
+    )
+    combined_features = combined_features.merge(
+        features_indicators, how="left", on="close_time"
+    )
+    combined_features = combined_features.merge(
+        features_stochastic, how="left", on="close_time"
+    )
+    combined_features = combined_features.merge(
+        features_trades, how="left", on="close_time"
+    )
+
+    return combined_features

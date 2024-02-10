@@ -1,0 +1,49 @@
+[build-system]
+requires = [ "setuptools",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model"
+readme = "README.md"
+dynamic = [ "dependencies", "version",]
+
+[tool.kedro]
+package_name = "volatility-prediction-model"
+project_name = "Volatility prediction model"
+kedro_init_version = "0.19.2"
+tools = [ "Data Structure",]
+example_pipeline = "False"
+source_dir = "src"
+
+[project.entry-points."kedro.hooks"]
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+[tool.setuptools.dynamic.version]
+attr = "model.__version__"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+namespaces = false
+
+[tool.ruff]
+line-length = 120
+
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "C",
+    "B",
+    "UP",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.pydocstyle]
+convention = "google"
