@@ -138,6 +138,8 @@ def fe_stochastic(
 
         # Check for Matern and Ornstein-Uhlenbeck kernels
         res = [combined["close_time"][i]]
+
+        edf = np.arange(1, len(raw_path) + 1) / len(raw_path)
         for k_type in inv_cov_dct.keys():
             # find p_value of Kolmogorov-Smirnov test for each lengthscale
             p_vals = []
@@ -145,7 +147,6 @@ def fe_stochastic(
                 standardized_path = inv_cov_dct[k_type][ls] @ price_path
                 sorted_path = np.sort(standardized_path.ravel())
                 normal_cdf = scipy.stats.norm.cdf(sorted_path, 0, 1)
-                edf = np.arange(1, len(sorted_path) + 1) / len(sorted_path)
 
                 p_value = np.exp(-max(abs(edf - normal_cdf)) ** 2 * len(sorted_path))
                 p_vals.append(p_value)
