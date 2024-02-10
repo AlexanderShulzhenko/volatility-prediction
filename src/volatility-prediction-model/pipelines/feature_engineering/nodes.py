@@ -1,12 +1,13 @@
 import logging
-import typing as t
+import math
+from typing import Any, Callable, Dict, Tuple
 
 import gpflow
 import numpy as np
 import pandas as pd
 import scipy
 import tensorflow as tf
-from numba import jit
+from numba import float64, jit, vectorize
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):
 
 
 @jit(nopython=True)
-def line_fit(target_values: np.array, window_size: int) -> t.Tuple:
+def line_fit(target_values: np.array, window_size: int) -> Tuple:
     coefs = [np.nan] * window_size
     r2s = [np.nan] * window_size
 
@@ -97,7 +98,7 @@ def fe_indicators(candlestick_data: pd.DataFrame) -> pd.DataFrame:
     return candlestick_data
 
 
-def get_inv_cov() -> t.Dict:
+def get_inv_cov() -> Dict:
     inv_cov_dct = {}
     Xplot = np.arange(0, 96, 1).astype(float)[:, None]
     X = np.zeros((0, 1))
@@ -122,8 +123,25 @@ def get_inv_cov() -> t.Dict:
     return inv_cov_dct
 
 
+@vectorize([float64(float64)])
+def vec_erf(x: float):
+    return math.erf(x)
+
+
+@jit(nopython=True)
+def kolmogorov_smirnov_test(price_path: np.ndarray, inv_cov: np.ndarray, k_type: str, ls: int) -> float:
+    standardized_path = inv_cov @ price_path
+    sorted_path = np.sort(standardized_path.ravel())
+    normal_cdf = vec_erf(sorted_path)
+    edf = np.arange(1, len(price_path) + 1) / len(price_path)
+
+    p_value = np.exp(-max(np.abs(edf - normal_cdf)) ** 2 * len(sorted_path))
+
+    return p_value
+
+
 def fe_stochastic(
-    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: t.Dict
+    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: Dict
 ) -> pd.DataFrame:
     combined = candlestick_data.merge(master_list, how="left", on="close_time")
     idx = combined[combined["target"].notna()].index
@@ -139,16 +157,12 @@ def fe_stochastic(
         # Check for Matern and Ornstein-Uhlenbeck kernels
         res = [combined["close_time"][i]]
 
-        edf = np.arange(1, len(raw_path) + 1) / len(raw_path)
         for k_type in inv_cov_dct.keys():
             # find p_value of Kolmogorov-Smirnov test for each lengthscale
             p_vals = []
             for ls in range(5, 110, 5):
-                standardized_path = inv_cov_dct[k_type][ls] @ price_path
-                sorted_path = np.sort(standardized_path.ravel())
-                normal_cdf = scipy.stats.norm.cdf(sorted_path, 0, 1)
-
-                p_value = np.exp(-max(abs(edf - normal_cdf)) ** 2 * len(sorted_path))
+                inv_cov = inv_cov_dct[k_type][ls]
+                p_value = kolmogorov_smirnov_test(price_path, inv_cov, k_type, ls)
                 p_vals.append(p_value)
 
             # Shapiro-Wilk second test on found lengthscale to verify
@@ -173,7 +187,7 @@ def fe_stochastic(
 
 
 def fe_trades(
-    master_list: pd.DataFrame, partitioned_input: t.Dict[str, t.Callable[[], t.Any]]
+    master_list: pd.DataFrame, partitioned_input: Dict[str, Callable[[], Any]]
 ) -> pd.DataFrame:
     trades_features = master_list.drop(columns="target")
 
