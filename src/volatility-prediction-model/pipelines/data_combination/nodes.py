@@ -26,9 +26,3 @@ def concat_partitions(
         result = pd.concat([result, partition_data], ignore_index=True, sort=True)
 
     return result
-
-
-def clean_master_list(master_list: pd.DataFrame) -> pd.DataFrame:
-    master_list["close_time"] = _convert_to_date(master_list["close_time"])
-    master_list["target"] = _replace_value(master_list["target"])
-    return master_list
