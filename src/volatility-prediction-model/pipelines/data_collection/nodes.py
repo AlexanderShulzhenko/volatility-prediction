@@ -1,6 +1,6 @@
 import datetime as dt
 import warnings
-from typing import List
+from typing import Dict
 
 import pandas as pd
 from binance.client import Client
@@ -29,44 +29,38 @@ num_days = {
 }
 
 
-def get_candlestick_data():
-    data_collection = []
+def get_candlestick_data() -> Dict[str, pd.DataFrame]:
+    data_collection = {}
+    for year in [2021, 2022, 2023]:
+        print(f"Loading year {year}...")
+        for month in trange(1,13):
+            interval='15m'
 
-    for month in trange(1,13):
-        interval='15m'
+            klines = client.futures_historical_klines("BTCUSDT",
+                                                    interval,
+                                                    f"{year}-{month}-01T00:00:00Z",
+                                                    f"{year}-{month}-{num_days[month]}T23:59:00Z"
+                                                    )
+            data = pd.DataFrame(klines)
 
-        klines = client.futures_historical_klines("BTCUSDT",
-                                                interval,
-                                                f"2023-{month}-01T00:00:00Z",
-                                                f"2023-{month}-{num_days[month]}T23:59:00Z"
-                                                )
-        data = pd.DataFrame(klines)
-
-        # create colums name
-        data.columns = ['open_time',
-                        'open',
-                        'high',
-                        'low',
-                        'close',
-                        'volume',
-                        'close_time',
-                        'qav','num_trades',
-                        'taker_base_vol',
-                        'taker_quote_vol',
-                        'ignore']
-        data['close_time'] = [dt.datetime.fromtimestamp(x/1000.0) for x in data['close_time']]
-        data['open_time'] = [dt.datetime.fromtimestamp(x/1000.0) for x in data['open_time']]
-        data['close']=data['close'].astype('float')
-        data['open']=data['open'].astype('float')
-        data['high']=data['high'].astype('float')
-        data['low']=data['low'].astype('float')
-        data['volume']=data['volume'].astype('float')
-        data_collection.append(data)
+            # create colums name
+            data.columns = ['open_time',
+                            'open',
+                            'high',
+                            'low',
+                            'close',
+                            'volume',
+                            'close_time',
+                            'qav','num_trades',
+                            'taker_base_vol',
+                            'taker_quote_vol',
+                            'ignore']
+            data['close_time'] = [dt.datetime.fromtimestamp(x/1000.0) for x in data['close_time']]
+            data['open_time'] = [dt.datetime.fromtimestamp(x/1000.0) for x in data['open_time']]
+            data['close'] = data['close'].astype('float')
+            data['open'] = data['open'].astype('float')
+            data['high'] = data['high'].astype('float')
+            data['low'] = data['low'].astype('float')
+            data['volume'] = data['volume'].astype('float')
+            data_collection[f"{year}_{month}"] = data
     return data_collection
-
-
-def save_candlestick_data(data_collection: List[pd.DataFrame]):
-    num = 0
-    for d in data_collection:
-        num += 1
-        d.to_csv(f'2023_{num}.csv')

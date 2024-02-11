@@ -12,13 +12,6 @@ candlesticks_partitioned:
   dataset: pandas.CSVDataset
   filename_suffix: ".csv"
 
-# TBD
-temp_candlesticks_partitioned:
-  type: partitions.PartitionedDataset
-  path: data/01_raw/temp_candlestick_data
-  dataset: pandas.CSVDataset
-  filename_suffix: ".csv"
-
 trades_partitioned:
   type: partitions.PartitionedDataset
   path: data/01_raw/trades_data
