@@ -1,5 +1,5 @@
 venv/
-data/*
+data/*/*
 .DS_Store
 
 !.gitkeep
