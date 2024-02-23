@@ -8,7 +8,7 @@ readme = "README.md"
 dynamic = ["dependencies", "version",]
 
 [tool.kedro]
-package_name = "volatility-prediction-model"
+package_name = "volatility_prediction_model"
 project_name = "Volatility prediction model"
 kedro_init_version = "0.19.2"
 tools = [ "Data Structure",]
