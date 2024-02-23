@@ -12,6 +12,7 @@ jobs:
           - end-of-file-fixer
           - trailing-whitespace
           - nbstripout
+          - mypy
           - ruff
     steps:
       - name: Check out
