@@ -1,5 +1,5 @@
 import logging
-import typing as t
+from typing import Dict, Tuple
 
 import pandas as pd
 from lightgbm import LGBMClassifier
@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score
 logger = logging.getLogger(__name__)
 
 
-def split_data(feature_table: pd.DataFrame, parameters: t.Dict) -> t.Tuple:
+def split_data(feature_table: pd.DataFrame, parameters: Dict) -> Tuple:
     X = feature_table[parameters["features"]]
     y = feature_table["target"]
     X_train = X[: parameters["train_size"]]
@@ -20,7 +20,7 @@ def split_data(feature_table: pd.DataFrame, parameters: t.Dict) -> t.Tuple:
 
 
 def train_model(
-    X_train: pd.DataFrame, y_train: pd.Series, parameters: t.Dict
+    X_train: pd.DataFrame, y_train: pd.Series, parameters: Dict
 ) -> LGBMClassifier:
     clf = LGBMClassifier(
         n_estimators=parameters["n_estimators"],
