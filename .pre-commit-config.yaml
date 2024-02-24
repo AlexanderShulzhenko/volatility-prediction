@@ -18,8 +18,8 @@ repos:
         exclude: async_test.py|__main__.py
         args: [--strict, --ignore-missing-imports, --disallow-subclassing-any]
 
--   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.1.11"
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.2.2"
     hooks:
     -   id: ruff
         args: [--fix, --config, pyproject.toml]
