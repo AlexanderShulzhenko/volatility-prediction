@@ -59,15 +59,14 @@ async def get_trades(session, url):
         trades_dct = await resp.json()
         return trades_dct
 
+
 # ruff: noqa: C901
 async def main():
-
     BATCH_LEN = len(master_list)
     start_stamps, end_stamps = get_stamps()
     spine = [branch(False, [], int(start_stamps[i]), int(end_stamps[i])) for i in range(BATCH_LEN)]
 
     async with aiohttp.ClientSession() as session:
-
         # First batch: based on start time and ran for ALL branches
         tasks = []
         for i in range(BATCH_LEN):
@@ -111,7 +110,6 @@ async def main():
                 time.sleep(70)
                 api_load = 0
             batch = await asyncio.gather(*tasks)
-
 
             from_trade_id = [None] * len(spine)
             cnt = 0

@@ -10,7 +10,7 @@ from .nodes import (
 )
 
 
-def create_pipeline(**kwargs) -> Pipeline: # type: ignore
+def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
     return pipeline(
         [
             node(

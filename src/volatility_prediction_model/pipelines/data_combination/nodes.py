@@ -10,10 +10,8 @@ def _convert_to_date(x: pd.Series) -> pd.Series:
     return pd.to_datetime(x)
 
 
-@check_output(candlestick_data_schema) # type: ignore
-def concat_partitions(
-    partitioned_input: Dict[str, Callable[[], Any]]
-) -> pd.DataFrame:
+@check_output(candlestick_data_schema)  # type: ignore
+def concat_partitions(partitioned_input: Dict[str, Callable[[], Any]]) -> pd.DataFrame:
     result = pd.DataFrame()
     for _partition_key, partition_load_func in sorted(partitioned_input.items()):
         partition_data = partition_load_func()

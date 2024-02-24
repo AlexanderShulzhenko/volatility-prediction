@@ -30,7 +30,7 @@ namespaces = false
 [tool.ruff]
 line-length = 120
 
-select = [
+lint.select = [
     "E",
     "W",
     "F",
@@ -45,5 +45,5 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"

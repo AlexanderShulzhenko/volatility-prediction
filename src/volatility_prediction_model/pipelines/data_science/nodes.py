@@ -8,9 +8,7 @@ from sklearn.metrics import roc_auc_score
 logger = logging.getLogger(__name__)
 
 
-def split_data(
-    feature_table: pd.DataFrame, parameters: Dict[str, Any]
-) -> Tuple[pd.DataFrame, ...]:
+def split_data(feature_table: pd.DataFrame, parameters: Dict[str, Any]) -> Tuple[pd.DataFrame, ...]:
     X = feature_table[parameters["features"]]
     y = feature_table["target"]
     X_train = X[: parameters["train_size"]]
@@ -21,9 +19,7 @@ def split_data(
     return X_train, X_test, y_train, y_test
 
 
-def train_model(
-    X_train: pd.DataFrame, y_train: pd.Series, parameters: Dict[str, Any]
-) -> LGBMClassifier:
+def train_model(X_train: pd.DataFrame, y_train: pd.Series, parameters: Dict[str, Any]) -> LGBMClassifier:
     clf = LGBMClassifier(
         n_estimators=parameters["n_estimators"],
         max_depth=parameters["max_depth"],
@@ -42,9 +38,7 @@ def evaluate_model(
     y_train: pd.Series,
     y_test: pd.Series,
 ) -> pd.Series:
-    for mode, datasets in zip(
-        ["train", "test"], [(X_train, y_train), (X_test, y_test)]
-    ):
+    for mode, datasets in zip(["train", "test"], [(X_train, y_train), (X_test, y_test)]):
         X = datasets[0]
         y = datasets[1]
         y_pred = clf.predict_proba(X)

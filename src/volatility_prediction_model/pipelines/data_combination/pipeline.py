@@ -3,7 +3,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import concat_partitions
 
 
-def create_pipeline(**kwargs) -> Pipeline: # type: ignore
+def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
     return pipeline(
         [
             node(

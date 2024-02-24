@@ -22,9 +22,7 @@ class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):  # type: ignore
 
 
 @jit(nopython=True)  # type: ignore
-def line_fit(
-    target_values: np.array, window_size: int
-) -> Tuple[List[float], List[float]]:
+def line_fit(target_values: np.array, window_size: int) -> Tuple[List[float], List[float]]:
     coefs = [np.nan] * window_size
     r2s = [np.nan] * window_size
 
@@ -33,9 +31,7 @@ def line_fit(
     for i in range(window_size, len(target_values)):
         y = target_values[i - window_size : i]
         X_pad_t = X_pad.T
-        intercept, slope = np.dot(
-            np.dot(np.linalg.inv(np.dot(X_pad_t, X_pad)), X_pad_t), y
-        )
+        intercept, slope = np.dot(np.dot(np.linalg.inv(np.dot(X_pad_t, X_pad)), X_pad_t), y)
         pred = X * slope + intercept
 
         ss_t = (pred.ravel() - y) ** 2
@@ -61,9 +57,7 @@ def fe_candlestick_data(candlestick_data: pd.DataFrame) -> pd.DataFrame:
         0.5 * (np.log(candlestick_data["high"] / candlestick_data["low"])) ** 2
         - c * (np.log(candlestick_data["close"] / candlestick_data["open"])) ** 2
     )
-    candlestick_data["Garman_Klass_HV_4"] = np.sqrt(
-        candlestick_data["GK_HV_inner"].rolling(4).mean()
-    )
+    candlestick_data["Garman_Klass_HV_4"] = np.sqrt(candlestick_data["GK_HV_inner"].rolling(4).mean())
 
     return candlestick_data
 
@@ -74,25 +68,17 @@ def fe_indicators(candlestick_data: pd.DataFrame) -> pd.DataFrame:
     candlestick_data["MA_40"] = candlestick_data["close"].rolling(40).mean()
     candlestick_data["MA_100"] = candlestick_data["close"].rolling(100).mean()
 
-    candlestick_data["MA_5_under_MA_40"] = np.where(
-        candlestick_data["MA_5"] < candlestick_data["MA_40"], 1, 0
-    )
-    candlestick_data["MA_5_under_MA_100"] = np.where(
-        candlestick_data["MA_5"] < candlestick_data["MA_100"], 1, 0
-    )
+    candlestick_data["MA_5_under_MA_40"] = np.where(candlestick_data["MA_5"] < candlestick_data["MA_40"], 1, 0)
+    candlestick_data["MA_5_under_MA_100"] = np.where(candlestick_data["MA_5"] < candlestick_data["MA_100"], 1, 0)
 
-    candlestick_data["MA_5_MA_100_ratio"] = (
-        candlestick_data["MA_5"] / candlestick_data["MA_40"]
-    )
+    candlestick_data["MA_5_MA_100_ratio"] = candlestick_data["MA_5"] / candlestick_data["MA_40"]
 
     # Bollinger Bands
     candlestick_data["std_10"] = candlestick_data["close"].rolling(10).std()
     candlestick_data["bbh"] = candlestick_data["MA_5"] + 2 * candlestick_data["std_10"]
     candlestick_data["bbl"] = candlestick_data["MA_5"] - 2 * candlestick_data["std_10"]
 
-    candlestick_data["bbw%"] = (
-        candlestick_data["bbh"] - candlestick_data["bbl"]
-    ) / candlestick_data["MA_5"]
+    candlestick_data["bbw%"] = (candlestick_data["bbh"] - candlestick_data["bbl"]) / candlestick_data["MA_5"]
 
     # Rolling Linear Regression
     logger.info("Running Linear Regression")
@@ -134,15 +120,13 @@ def vec_erf(x: float):
 
 
 @jit(nopython=True)  # type: ignore
-def kolmogorov_smirnov_test(
-    price_path: np.ndarray, inv_cov: np.ndarray, k_type: str, ls: int
-) -> Any:
+def kolmogorov_smirnov_test(price_path: np.ndarray, inv_cov: np.ndarray, k_type: str, ls: int) -> Any:
     standardized_path = inv_cov @ price_path
     sorted_path = np.sort(standardized_path.ravel())
     normal_cdf = vec_erf(sorted_path)
     edf = np.arange(1, len(price_path) + 1) / len(price_path)
 
-    p_value = np.exp(-max(np.abs(edf - normal_cdf)) ** 2 * len(sorted_path))
+    p_value = np.exp(-(max(np.abs(edf - normal_cdf)) ** 2) * len(sorted_path))
 
     return p_value
 
@@ -193,9 +177,7 @@ def fe_stochastic(
     return stochastic_features
 
 
-def fe_trades(
-    master_list: pd.DataFrame, partitioned_input: Dict[str, Callable[[], Any]]
-) -> pd.DataFrame:
+def fe_trades(master_list: pd.DataFrame, partitioned_input: Dict[str, Callable[[], Any]]) -> pd.DataFrame:
     trades_features = master_list.drop(columns="target")
 
     skews = []
@@ -228,17 +210,9 @@ def master_list_merge(
     features_trades: pd.DataFrame,
 ) -> pd.DataFrame:
     combined_features = master_list
-    combined_features = combined_features.merge(
-        features_candlestick_data, how="left", on="close_time"
-    )
-    combined_features = combined_features.merge(
-        features_indicators, how="left", on="close_time"
-    )
-    combined_features = combined_features.merge(
-        features_stochastic, how="left", on="close_time"
-    )
-    combined_features = combined_features.merge(
-        features_trades, how="left", on="close_time"
-    )
+    combined_features = combined_features.merge(features_candlestick_data, how="left", on="close_time")
+    combined_features = combined_features.merge(features_indicators, how="left", on="close_time")
+    combined_features = combined_features.merge(features_stochastic, how="left", on="close_time")
+    combined_features = combined_features.merge(features_trades, how="left", on="close_time")
 
     return combined_features
