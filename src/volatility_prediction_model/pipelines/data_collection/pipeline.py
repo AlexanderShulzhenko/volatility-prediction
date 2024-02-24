@@ -3,7 +3,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import clean_master_list, get_candlestick_data, get_trades_data
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(**kwargs) -> Pipeline: # type: ignore
     return pipeline([
         node(
             func=clean_master_list,

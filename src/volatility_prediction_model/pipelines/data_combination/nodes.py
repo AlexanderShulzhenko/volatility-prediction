@@ -10,11 +10,7 @@ def _convert_to_date(x: pd.Series) -> pd.Series:
     return pd.to_datetime(x)
 
 
-def _replace_value(x: pd.Series) -> pd.Series:
-    return x.replace(-1, 1)
-
-
-@check_output(candlestick_data_schema)
+@check_output(candlestick_data_schema) # type: ignore
 def concat_partitions(
     partitioned_input: Dict[str, Callable[[], Any]]
 ) -> pd.DataFrame:

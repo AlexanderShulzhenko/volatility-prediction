@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import gpflow
 import numpy as np
@@ -16,13 +16,15 @@ from ..schemas.trades_data_schema import trades_data_schema
 logger = logging.getLogger(__name__)
 
 
-class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):
-    def K_r2(self, r2):
+class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):  # type: ignore
+    def K_r2(self, r2: float) -> Any:
         return self.variance * tf.exp(-tf.sqrt(r2))
 
 
-@jit(nopython=True)
-def line_fit(target_values: np.array, window_size: int) -> Tuple:
+@jit(nopython=True)  # type: ignore
+def line_fit(
+    target_values: np.array, window_size: int
+) -> Tuple[List[float], List[float]]:
     coefs = [np.nan] * window_size
     r2s = [np.nan] * window_size
 
@@ -101,7 +103,7 @@ def fe_indicators(candlestick_data: pd.DataFrame) -> pd.DataFrame:
     return candlestick_data
 
 
-def get_inv_cov() -> Dict:
+def get_inv_cov() -> Dict[str, Any]:
     inv_cov_dct = {}
     Xplot = np.arange(0, 96, 1).astype(float)[:, None]
     X = np.zeros((0, 1))
@@ -126,13 +128,15 @@ def get_inv_cov() -> Dict:
     return inv_cov_dct
 
 
-@vectorize([float64(float64)])
+@vectorize([float64(float64)])  # type: ignore
 def vec_erf(x: float):
     return math.erf(x)
 
 
-@jit(nopython=True)
-def kolmogorov_smirnov_test(price_path: np.ndarray, inv_cov: np.ndarray, k_type: str, ls: int) -> float:
+@jit(nopython=True)  # type: ignore
+def kolmogorov_smirnov_test(
+    price_path: np.ndarray, inv_cov: np.ndarray, k_type: str, ls: int
+) -> Any:
     standardized_path = inv_cov @ price_path
     sorted_path = np.sort(standardized_path.ravel())
     normal_cdf = vec_erf(sorted_path)
@@ -144,7 +148,7 @@ def kolmogorov_smirnov_test(price_path: np.ndarray, inv_cov: np.ndarray, k_type:
 
 
 def fe_stochastic(
-    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: Dict
+    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: Dict[str, Any]
 ) -> pd.DataFrame:
     combined = candlestick_data.merge(master_list, how="left", on="close_time")
     idx = combined[combined["target"].notna()].index

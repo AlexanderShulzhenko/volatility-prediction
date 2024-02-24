@@ -15,6 +15,8 @@ repos:
     rev: "v1.7.1"
     hooks:
     -   id: mypy
+        exclude: async_test.py|__main__.py
+        args: [--strict, --ignore-missing-imports, --disallow-subclassing-any]
 
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: "v0.1.11"
