@@ -68,7 +68,7 @@ async def main():
     start_stamps, end_stamps = get_stamps()
     spine = [branch(False, [], int(start_stamps[i]), int(end_stamps[i])) for i in range(BATCH_LEN)]
 
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=1000)) as session:
+    async with aiohttp.ClientSession() as session:
         # First batch: based on start time and ran for ALL branches
         tasks = []
         for i in range(BATCH_LEN):
