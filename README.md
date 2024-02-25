@@ -4,7 +4,7 @@
 ## Intro
 This repo is a PoC stated in my paper, that could be found at ??. Model for predicting short-term volatility fluctuations is trained and explained, as well as a data processing pipeline, which includes data collection, preprocessing and feature engineering. We use Kedro as a framework to wrap all the code into the maintainable and easily configured pipelines. Essentially, project could be expressed in four main pipelines:
 - [**Data collection**](https://github.com/AlexanderShulzhenko/volatility-prediction/blob/main/src/volatility_prediction_model/pipelines/data_collection): optimized pipeline utilizing async requests to collect data using Binance REST API;
-- **Data combination**: combine klines `kedro.PartitionedDataset` into one `pd.DataFrame` for further analysis;
+- [**Data combination**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/data_combination): combine klines `kedro.PartitionedDataset` into one `pd.DataFrame` for further analysis;
 - [**Feature engineering**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/feature_engineering): generate comprehensive list of features utilizing different techiques of analysis, e.g., time-series analysis, technical indicators, trades in-depth exploration, etc.;
 - **Data science**: build, train and calibrate the model as well as create inference table for predictions assesment.
 
