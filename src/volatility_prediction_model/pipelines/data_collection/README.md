@@ -30,4 +30,4 @@ Branch is used to track all the batches pulled by an algorithm.
 
 When the batch is pulled it is distributed accordingly to the branches. When the branch is finished, i.e., when the latest trade timestamp is greater than specified in the branch definition, `flag` variable is assigned with `True`. This data structure helps to keep track of all trades lists with quering only those which are still not finished. 
 
-> Spine is the basement for all branches, which is declared as list of empty branches. 
+> Spine is the basement for all branches, which is declared as list of empty branches.
