@@ -40,4 +40,6 @@ The model was trained on the server with 8GB RAM, which imposed constraints on t
 
 To asses the performance of the script the `API_calls.png` plot is generated based on the timings. The API calls made from the training server are presented below:
 
-<img src=https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/ab2aa81c-e93b-4634-9b02-faa59f7528ab width="700" height="490" class="center"/>
+<p align="center">
+  <img src=https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/ab2aa81c-e93b-4634-9b02-faa59f7528ab width="700" height="490"/>
+</p>
