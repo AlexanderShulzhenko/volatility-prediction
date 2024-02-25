@@ -12,7 +12,7 @@ concatenated_candlestick_data:
 
 To open this file you can use `kedro` extesion for `Jupyter` by simply running:
 
-```
+```python
 %load_ext kedro.ipython
 df = catalog.load("concatenated_candlestick_data")
 ```
