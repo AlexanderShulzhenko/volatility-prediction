@@ -1,10 +1,12 @@
 import datetime as dt
 import warnings
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from binance.client import Client
 from tqdm import trange
 
@@ -152,3 +154,23 @@ def get_trades_data(master_list: pd.DataFrame) -> Dict[str, pd.DataFrame]:
             trades_cleaned["Quantity"] = trades_cleaned["Quantity"].astype("float32")
         trades_collection[f"{i}"] = trades_cleaned
     return trades_collection
+
+
+def generate_api_calls_plot(api_load_tracker: List[List[float]]) -> None:
+    time_list = [datetime.fromtimestamp(x[0]) for x in api_load_tracker]
+    api_load = [x[1] for x in api_load_tracker]
+
+    fig, ax = plt.subplots(2, 1, figsize=(10, 7), dpi=300)
+
+    sns.lineplot(x=time_list, y=api_load, ax=ax[0], color=(12 / 255, 21 / 255, 73 / 255))
+    ax[0].set_ylabel("API load (weight)", fontsize=15)
+
+    for d in time_list:
+        ax[0].vlines(x=d, ymin=0, ymax=6000, color="gray", linewidth=0.2)
+
+    sns.histplot(time_list, color=(45 / 255, 160 / 255, 233 / 255), ax=ax[1])
+    ax[1].set_xlabel("API call time", fontsize=15)
+    ax[1].set_ylabel("Number of API calls", fontsize=15)
+
+    plt.tight_layout()
+    plt.savefig("API_calls.png")
