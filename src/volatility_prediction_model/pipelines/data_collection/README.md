@@ -13,3 +13,6 @@ Trades data is leveraged to build unit-trades features by analysing the patterns
 
 ### Branch
 > Branch is a structure (python class) that is defined as:
+> ```
+> sds
+> ```
