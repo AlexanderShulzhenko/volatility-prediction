@@ -132,6 +132,10 @@ async def main():
             cnt = 0
             for i in range(len(spine)):
                 if not spine[i].flag:
+                    # TODO: resolve memory issue. Spine is too big to store
+                    # need to save batches first and then build spine from them
+                    # or branches individually
+
                     # spine[i].trades_dct_list.append(batch[cnt])
                     try:
                         last_trade_id = batch[cnt][-1]["a"]
