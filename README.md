@@ -6,7 +6,7 @@ This repo is a PoC stated in my paper, that could be found at ??. Model for pred
 - [**Data collection**](https://github.com/AlexanderShulzhenko/volatility-prediction/blob/main/src/volatility_prediction_model/pipelines/data_collection): optimized pipeline utilizing async requests to collect data using Binance REST API;
 - [**Data combination**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/data_combination): combine klines `kedro.PartitionedDataset` into one `pd.DataFrame` for further analysis;
 - [**Feature engineering**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/feature_engineering): generate comprehensive list of features utilizing different techiques of analysis, e.g., time-series analysis, technical indicators, trades in-depth exploration, etc.;
-- **Data science**: build, train and calibrate the model as well as create inference table for predictions assesment.
+- [**Data science**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/data_science): build, train and calibrate the model as well as create inference table for predictions assesment.
 
 ***Note***: for more detailed documentation refer to README files in the pipelines folder of current repo.
 
