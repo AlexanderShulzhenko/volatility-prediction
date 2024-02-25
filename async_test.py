@@ -149,7 +149,6 @@ async def main():
                     if last_trade_time >= spine[i].end_stamp:
                         spine[i].flag = True
 
-            # print([b.flag for b in spine])
             print(f"> Processed pulled data in {time.time() - start}")
 
             b_num += 1
@@ -165,6 +164,8 @@ start_time = time.time()
 spine, api_load_tracker = asyncio.run(main())
 end_time = time.time()
 print("--- %s seconds ---" % (end_time - start_time))
+
+# print(api_load_tracker)
 
 full_trades_df_list = process_spine(spine)
 print(full_trades_df_list[567])
