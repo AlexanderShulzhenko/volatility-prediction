@@ -10,3 +10,6 @@ Data collection pipeline provides scripts to scrap Bainance REST API in order to
 
 ## Trades data
 Trades data is leveraged to build unit-trades features by analysing the patterns of trades behavior before each timestamp in the master list. Pulling trades data is non-trivial exercise since the amount of data that should be pulled is huge and API calls take quite a while. Best practice to accelerate the requests is to use the async programming. We leveraged `aiohttp` library to make async API calls. Due to API limits imposed by Binance we had to introduce a special data structure called `branch`, where the collection of all branches are built on a `spine`.
+
+### Branch
+> Branch is a structure (python class) that is defined as:
