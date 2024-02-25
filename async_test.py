@@ -85,15 +85,13 @@ async def main():
         api_load_tracker = [[time.time(), api_load]]
         print(f"Got API load of {api_load}")
 
-        # print("Sleeping to fit the API limits...")
-        # time.sleep(60)
-
         # get last trade ids for each trade list in the first batch
         from_trade_id = []
         for i, trades_dct in enumerate(batch):
             if len(trades_dct) > 0:
                 last_trade_id = trades_dct[-1]["a"]
             else:
+                # if Binance refuses to provide trades
                 spine[i].flag = True
             from_trade_id.append(last_trade_id)
 
@@ -106,7 +104,7 @@ async def main():
         while not all_branches_complete:
             start = time.time()
             tasks = []
-            # go through full spine, but request only for branches that are not finished yet
+            # go through full spine, but request those branches that are not finished yet
             for i in range(len(spine)):
                 if not spine[i].flag:
                     url = "https://api.binance.com/api/v3/aggTrades?symbol=BTCUSDT&limit=1000"
@@ -134,7 +132,7 @@ async def main():
             cnt = 0
             for i in range(len(spine)):
                 if not spine[i].flag:
-                    spine[i].trades_dct_list.append(batch[cnt])
+                    # spine[i].trades_dct_list.append(batch[cnt])
                     try:
                         last_trade_id = batch[cnt][-1]["a"]
                     except KeyError:
@@ -143,8 +141,6 @@ async def main():
                     last_trade_time = batch[cnt][-1]["T"]
                     from_trade_id[i] = last_trade_id
                     cnt += 1
-
-                    # print(f"{last_trade_time:,d}", f"{spine[i].end_stamp:,d}")
 
                     if last_trade_time >= spine[i].end_stamp:
                         spine[i].flag = True

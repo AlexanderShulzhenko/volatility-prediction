@@ -1,5 +1,16 @@
+# virtual envs
+.conda
 venv/
+.venv
+
+# data folder
 data/*/*
+
+# MACOS
 .DS_Store
 
+# debugger
+.vscode
+
+# exceptions
 !.gitkeep
