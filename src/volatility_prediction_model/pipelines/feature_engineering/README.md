@@ -51,5 +51,4 @@ This problem is reduced to testing the hypothesis that
 
 $$ \textbf{Y}_1, \dots, \textbf{Y}_n \overset{iid}{\sim} \mathcal{N}(0, 1)$$
 
-which is the standard task of testing the hypothesis of sample normality. There are a large number of tests to test such a hypothesis; One of the most popular tests is the Shapiro-Wilk test \cite{shapiro}.
-\item Optimize the parameters vector $\beta$ by minimizing the p-value from the previous step.
+which is the standard task of testing the hypothesis of sample normality. There are a large number of tests to test such a hypothesis; One of the most popular tests is the Shapiro-Wilk test.
