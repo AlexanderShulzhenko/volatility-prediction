@@ -15,7 +15,7 @@ repos:
     rev: "v1.7.1"
     hooks:
     -   id: mypy
-        exclude: async_test.py|__main__.py
+        exclude: async_test.py|__main__.py # async to be excluded
         args: [--strict, --ignore-missing-imports, --disallow-subclassing-any]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
