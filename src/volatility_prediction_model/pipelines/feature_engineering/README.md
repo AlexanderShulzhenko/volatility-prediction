@@ -18,9 +18,9 @@ def line_fit(
   # calculation body
   return coefs, r2s
 ```
-This function is calculating slopes and $R^2$ metrics for each fit. 
-
+This function is calculating slopes using OLS estimator and $R^2$ metrics for each fit.
 
 ## Trades features
+This section performs in-depth analysis of the trades data. Base statistics as skewness and kurtosis are calculated, on other side statistical tests are performed to check the distributions fit for popular distributions (e.g., $\mathcal{Norm(0, 1)}$ or $\mathcal{Cauchy(0, 1)}$). 
 
 ## Stochastic features
