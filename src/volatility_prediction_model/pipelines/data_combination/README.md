@@ -17,3 +17,22 @@ To open this file you can use `kedro` extesion for `Jupyter` by simply running:
 df = catalog.load("concatenated_candlestick_data")
 ```
 in the notebook opened from the project location.
+
+The output of the combination pipeline is validated using `pandera.check_output()` function with the following schema:
+```python
+DataFrameSchema(
+    {
+        "open_time": Column(np.dtype("datetime64[ns]"), required=False),
+        "open": Column(float, required=True),
+        "high": Column(float, required=True),
+        "low": Column(float, required=True),
+        "close": Column(float, required=True),
+        "volume": Column(float, required=True),
+        "close_time": Column(np.dtype("datetime64[ns]"), required=True),
+        "qav": Column(float, required=False),
+        "num_trades": Column(int, required=True),
+        "taker_base_vol": Column(float, required=False),
+        "taker_quote_vol": Column(float, required=False),
+    }
+)
+```
