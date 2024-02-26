@@ -1,4 +1,4 @@
-![Новый проект-2](https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/d284203c-ac30-4985-bec8-a4c9683c307b)# Short-term Volatility Prediction
+# Short-term Volatility Prediction
 ![repo_preview_wide_new](https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/167a7bfc-1d19-4f5c-897b-56bbb65b774c)
 
 ## Intro
