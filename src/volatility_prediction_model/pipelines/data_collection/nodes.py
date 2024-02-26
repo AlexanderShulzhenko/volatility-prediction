@@ -13,8 +13,8 @@ from tqdm import trange
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-api_key = "jpMZyoxdAxEpMcF0QObw9zSyvDNgKJdzuZFIOwxdu8RcP3vJ8TnZD3z9wceBHZz6"
-api_secret = "XbQcSmgZUDYx6VGqibCQeWgiqP4bBDQdHqiKxSCfEpTrHxRPBsmJIl9h2M4ggDUz"
+api_key = "<your_api_key>"
+api_secret = "your_secret_api_key"
 client = Client(api_key, api_secret)
 
 num_days = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
