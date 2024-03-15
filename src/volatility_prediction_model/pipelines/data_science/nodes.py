@@ -37,7 +37,7 @@ def evaluate_model(
     X_test: pd.DataFrame,
     y_train: pd.Series,
     y_test: pd.Series,
-) -> pd.Series:
+) -> pd.DataFrame:
     for mode, datasets in zip(["train", "test"], [(X_train, y_train), (X_test, y_test)]):
         X = datasets[0]
         y = datasets[1]
@@ -45,4 +45,7 @@ def evaluate_model(
         score = roc_auc_score(y, y_pred[:, 1])
         logger.info("ROC-AUC score on %s: %.3f", mode, score)
 
-    return pd.Series(y_pred[:, 1])
+    predictions = X.copy()
+    predictions["prediction"] = y_pred[:, 1]
+
+    return predictions
