@@ -1,6 +1,6 @@
 name: Continous integration
 on:
-  push:
+  pull_request:
     branches:
       - main
 jobs:
