@@ -1,0 +1,1 @@
+{"feature_table": {"rows": 2605, "columns": 51, "file_size": 934759}, "X_train": {"rows": 2000, "columns": 12}, "X_test": {"rows": 605, "columns": 12}, "model_output_test": {"rows": 605, "columns": 13, "file_size": 116946}}
