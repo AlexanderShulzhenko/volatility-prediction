@@ -38,6 +38,7 @@ def evaluate_model(
     y_train: pd.Series,
     y_test: pd.Series,
 ) -> pd.Series:
+    # comment
     for mode, datasets in zip(["train", "test"], [(X_train, y_train), (X_test, y_test)]):
         X = datasets[0]
         y = datasets[1]
