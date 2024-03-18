@@ -6,28 +6,13 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import websockets
+from utils import (
+    KLINES_COLS,
+    get_metrics,
+    get_model_stats,
+)
 
-klines_cols = [
-    "start_time",
-    "close_time",
-    "symbol",
-    "interval",
-    "ft_id",
-    "lt_id",
-    "open",
-    "close",
-    "high",
-    "low",
-    "bav",
-    "num_trades",
-    "close_flag",
-    "qav",
-    "taker1",
-    "taker2",
-    "ignore",
-]
-
-
+# titles
 st.set_page_config(
     page_title="Real-Time Data Science Dashboard",
     layout="wide",
@@ -36,76 +21,57 @@ st.set_page_config(
 st.title("Volatility Model Monitoring Dashboard")
 st.sidebar.title("Model info")
 
-# creating a single-element container
-placeholder = st.empty()
+# containers for stats and model
+fig_col1, fig_col2 = st.columns(2)
+live_stats = fig_col1.empty()
+model_stats = fig_col2.empty()
+
+# sidebar countdown
 line1 = st.sidebar.empty()
 line2 = st.sidebar.empty()
 
 
-def get_metrics(live_data):
-    metrics = {}
-    last_price = live_data["close"].iloc[-1]
-    last_volume = live_data["bav"].iloc[-1]
-    last_numt = live_data["num_trades"].iloc[-1]
-    if len(live_data) > 1:
-        prev_price = live_data["close"].iloc[-2]
-        prev_volume = live_data["bav"].iloc[-2]
-        prev_numt = live_data["num_trades"].iloc[-2]
-    else:
-        prev_price = last_price
-        prev_volume = last_volume
-        prev_numt = last_numt
-    price_diff = last_price - prev_price
-    volume_diff = last_volume - prev_volume
-    numt_diff = last_numt - prev_numt
+async def streamlit_plot(live_data):
+    # create two columns for charts
+    with live_stats.container():
+        kpi1, kpi2, kpi3 = st.columns(3)
 
-    metrics["last_price"] = last_price
-    metrics["price_diff"] = price_diff
-    metrics["last_volume"] = last_volume
-    metrics["volume_diff"] = volume_diff
-    metrics["last_numt"] = last_numt
-    metrics["numt_diff"] = numt_diff
+        metrics = get_metrics(live_data)
+        kpi1.metric(
+            label="Latest price",
+            value=round(metrics["last_price"], 2),
+            delta=round(metrics["price_diff"], 2),
+        )
+        kpi2.metric(
+            label="Latest volume",
+            value=round(metrics["last_volume"], 2),
+            delta=round(metrics["volume_diff"], 2),
+        )
+        kpi3.metric(
+            label="Num. Trades",
+            value=round(metrics["last_numt"], 2),
+            delta=round(metrics["numt_diff"], 2),
+        )
 
-    return metrics
+        st.markdown("### Live price chart")
+
+        candlestick = go.Candlestick(
+            x=live_data["start_time"],
+            open=live_data["open"],
+            high=live_data["high"],
+            low=live_data["low"],
+            close=live_data["close"],
+        )
+
+        fig = go.Figure(data=candlestick, layout={"xaxis": {"rangeslider": {"visible": False}}})
+
+        st.write(fig)
 
 
-def streamlit_plot(live_data):
-    with placeholder.container():
-        # create two columns for charts
-        fig_col1, fig_col2 = st.columns(2)
-        with fig_col1:
-            kpi1, kpi2, kpi3 = st.columns(3)
-
-            metrics = get_metrics(live_data)
-            kpi1.metric(
-                label="Latest price",
-                value=round(metrics["last_price"], 2),
-                delta=round(metrics["price_diff"], 2),
-            )
-            kpi2.metric(
-                label="Latest volume",
-                value=round(metrics["last_volume"], 2),
-                delta=round(metrics["volume_diff"], 2),
-            )
-            kpi3.metric(
-                label="Num. Trades",
-                value=round(metrics["last_numt"], 2),
-                delta=round(metrics["numt_diff"], 2),
-            )
-
-            st.markdown("### Live price chart")
-
-            candlestick = go.Candlestick(
-                x=live_data["start_time"],
-                open=live_data["open"],
-                high=live_data["high"],
-                low=live_data["low"],
-                close=live_data["close"],
-            )
-
-            fig = go.Figure(data=candlestick, layout={"xaxis": {"rangeslider": {"visible": False}}})
-
-            st.write(fig)
+async def plot_model(live_data):
+    stats = await get_model_stats(live_data)
+    with model_stats.container():
+        st.markdown(f"### Updated predictions with state {stats} at {dt.datetime.now()}")
 
 
 async def f_timer():
@@ -119,6 +85,7 @@ async def f_timer():
 
 async def listen_to_stream():
     data = []
+    state = 0
     async with websockets.connect("wss://stream.binance.com:9443/ws/btcusdt@kline_1m") as websocket:
         while True:
             message = await websocket.recv()
@@ -126,14 +93,19 @@ async def listen_to_stream():
             data.append(message["k"])
 
             klines = pd.DataFrame().from_records(data)
-            klines.columns = klines_cols
+            klines.columns = KLINES_COLS
             klines["start_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in klines["start_time"]]
             klines["close"] = klines["close"].astype(float)
             klines["bav"] = klines["bav"].astype(float)
             klines["num_trades"] = klines["num_trades"].astype(float)
+            klines["close_flag"] = klines["close_flag"].astype(bool)
             klines = klines.drop_duplicates(subset=["start_time"], keep="last")
 
-            streamlit_plot(klines)
+            await streamlit_plot(klines)
+
+            if len(klines) > state:
+                await plot_model(klines)
+                state = len(klines)
 
 
 async def run_widgets():

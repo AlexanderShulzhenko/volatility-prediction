@@ -44,3 +44,11 @@ def get_metrics(live_data):
     metrics["numt_diff"] = numt_diff
 
     return metrics
+
+
+async def get_model_stats(live_data):
+    for i in range(30_000_000):
+        a = i**2
+    if 1 == 0:
+        return a
+    return len(live_data)
