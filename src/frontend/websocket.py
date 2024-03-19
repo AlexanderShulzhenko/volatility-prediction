@@ -103,7 +103,7 @@ async def listen_to_stream():
 
             await streamlit_plot(klines)
 
-            if len(klines) > state:
+            if len(klines) > state:  # new line was added
                 await plot_model(klines)
                 state = len(klines)
 
