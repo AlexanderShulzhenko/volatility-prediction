@@ -132,10 +132,16 @@ def kolmogorov_smirnov_test(price_path: np.ndarray, inv_cov: np.ndarray, k_type:
 
 
 def fe_stochastic(
-    master_list: pd.DataFrame, candlestick_data: pd.DataFrame, inv_cov_dct: Dict[str, Any]
+    candlestick_data: pd.DataFrame,
+    inv_cov_dct: Dict[str, Any],
+    master_list: pd.DataFrame = None,
 ) -> pd.DataFrame:
-    combined = candlestick_data.merge(master_list, how="left", on="close_time")
-    idx = combined[combined["target"].notna()].index
+    if master_list is not None:
+        combined = candlestick_data.merge(master_list, how="left", on="close_time")
+        idx = combined[combined["target"].notna()].index
+    else:
+        combined = candlestick_data
+        idx = candlestick_data.index[95:]
 
     test_res = []
     for i in tqdm(idx):
