@@ -10,6 +10,7 @@ from utils import (
     KLINES_COLS,
     get_metrics,
     get_model_stats,
+    populate_data,
 )
 
 # titles
@@ -24,6 +25,7 @@ st.sidebar.title("Model info")
 # containers for stats and model
 fig_col1, fig_col2 = st.columns(2)
 live_stats = fig_col1.empty()
+pred_stats = fig_col1.empty()
 model_stats = fig_col2.empty()
 
 # sidebar countdown
@@ -56,7 +58,7 @@ async def streamlit_plot(live_data):
         st.markdown("### Live price chart")
 
         candlestick = go.Candlestick(
-            x=live_data["start_time"],
+            x=live_data["open_time"],
             open=live_data["open"],
             high=live_data["high"],
             low=live_data["low"],
@@ -71,7 +73,56 @@ async def streamlit_plot(live_data):
 async def plot_model(live_data):
     stats = await get_model_stats(live_data)
     with model_stats.container():
-        st.markdown(f"### Updated predictions with state {stats} at {dt.datetime.now()}")
+        kpi1, kpi2, kpi3 = st.columns(3)
+        kpi1.metric(
+            label="Last update",
+            value=str((stats["time"] + dt.timedelta(minutes=15)).time().strftime("%H:%M:%S")),
+        )
+        kpi2.metric(
+            label="True update time",
+            value=dt.datetime.now().time().strftime("%H:%M:%S"),
+        )
+        kpi3.metric(
+            label="Prediction",
+            value=str(round(100 * stats["prediction"], 1)) + "%",
+            delta=str(round(100 * (stats["prediction"] - stats["prev_prediction"]))) + "%",
+        )
+
+        st.markdown("### Detailed prediction values")
+
+        kpi1, kpi2, kpi3 = st.columns(3)
+        kpi1.metric(
+            label="GKHV",
+            value=round(stats["GKHV"] * 1e4, 1),
+            delta=round(1e4 * (stats["GKHV"] - stats["prev_GKHV"]), 1),
+        )
+        kpi2.metric(
+            label="BBW",
+            value=round(stats["bbw"] * 1e2, 3),
+            delta=round(1e2 * (stats["bbw"] - stats["prev_bbw"]), 3),
+        )
+        kpi3.metric(
+            label="Line slope",
+            value=round(stats["coef"], 1),
+            delta=round(stats["coef"] - stats["prev_coef"], 1),
+        )
+
+    with pred_stats.container():
+        data = stats["data"][-30:].reset_index(drop=True)
+        # Add one more row to match the new "growing" candlestick
+        last_row = pd.DataFrame().from_dict(
+            {
+                "open_time": [stats["time"] + dt.timedelta(minutes=15)],
+                "prediction": [0],
+            }
+        )
+        data = pd.concat([data, last_row]).reset_index(drop=True)
+        bar = go.Bar(
+            x=data["open_time"],
+            y=data["prediction"],
+        )
+        fig = go.Figure(data=bar, layout={"xaxis": {"rangeslider": {"visible": False}}})
+        st.write(fig)
 
 
 async def f_timer():
@@ -83,10 +134,12 @@ async def f_timer():
         await asyncio.sleep(1)
 
 
+# TODO: properly cut klines (no need to store full df)
 async def listen_to_stream():
     data = []
-    state = 0
-    async with websockets.connect("wss://stream.binance.com:9443/ws/btcusdt@kline_1m") as websocket:
+    init_klines = populate_data(num_records=100, symbol="BTCUSDT", interval="15m")
+    state = len(init_klines) - 1
+    async with websockets.connect("wss://stream.binance.com:9443/ws/btcusdt@kline_15m") as websocket:
         while True:
             message = await websocket.recv()
             message = json.loads(message)
@@ -94,18 +147,22 @@ async def listen_to_stream():
 
             klines = pd.DataFrame().from_records(data)
             klines.columns = KLINES_COLS
-            klines["start_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in klines["start_time"]]
+            klines["open_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in klines["open_time"]]
+            klines["close_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in klines["close_time"]]
             klines["close"] = klines["close"].astype(float)
             klines["bav"] = klines["bav"].astype(float)
             klines["num_trades"] = klines["num_trades"].astype(float)
             klines["close_flag"] = klines["close_flag"].astype(bool)
-            klines = klines.drop_duplicates(subset=["start_time"], keep="last")
 
-            await streamlit_plot(klines)
+            klines = pd.concat([init_klines, klines]).reset_index(drop=True)
+            klines = klines.drop_duplicates(subset=["open_time"], keep="last").reset_index(drop=True)
 
-            if len(klines) > state:  # new line was added
-                await plot_model(klines)
+            await streamlit_plot(klines[-30:].reset_index(drop=True))
+
+            if len(klines) > state:  # new candlestick had closed
+                await plot_model(klines[:-1])
                 state = len(klines)
+            print(klines["close_time"].iloc[-1])
 
 
 async def run_widgets():

@@ -1,5 +1,15 @@
+import datetime as dt
+from typing import Any, Dict, List
+
+import pandas as pd
+from binance import Client
+from runner import run_kedro_pipeline
+
+client = Client()
+
+
 KLINES_COLS = [
-    "start_time",
+    "open_time",
     "close_time",
     "symbol",
     "interval",
@@ -17,6 +27,41 @@ KLINES_COLS = [
     "taker2",
     "ignore",
 ]
+
+
+def populate_data(num_records: int, symbol: str, interval: str) -> List[Dict[str, Any]]:
+    interval_mins = int(interval[:-1])
+    time = dt.datetime.now() - dt.timedelta(hours=4)
+    print(str(time - dt.timedelta(minutes=num_records * interval_mins)))
+    klines = client.get_historical_klines(
+        symbol=symbol,
+        interval=interval,
+        start_str=str(time - dt.timedelta(minutes=num_records * interval_mins)),
+        end_str=str(time),
+    )
+    data = pd.DataFrame(klines)
+    data.columns = [
+        "open_time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "bav",
+        "close_time",
+        "qav",
+        "num_trades",
+        "taker1",
+        "taker2",
+        "ignore",
+    ]
+    data["close_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in data.close_time]
+    data["open_time"] = [dt.datetime.fromtimestamp(x / 1000.0) for x in data.open_time]
+    data["close"] = data["close"].astype("float")
+    data["open"] = data["open"].astype("float")
+    data["high"] = data["high"].astype("float")
+    data["low"] = data["low"].astype("float")
+    data["bav"] = data["bav"].astype("float")
+    return data
 
 
 def get_metrics(live_data):
@@ -46,9 +91,28 @@ def get_metrics(live_data):
     return metrics
 
 
-async def get_model_stats(live_data):
-    for i in range(30_000_000):
-        a = i**2
-    if 1 == 0:
-        return a
-    return len(live_data)
+async def get_model_stats(live_data: pd.DataFrame) -> Dict[str, Any]:
+    project_path = "/Users/alexshulzhenko/PycharmProjects/model/"
+
+    # Save newest data to dir
+    live_data.to_csv(project_path + "data/02_intermediate/klines.csv")
+    # Run kedro pipeline
+    run_kedro_pipeline(project_path, "inference")
+
+    # Reprting
+    stats = {}
+    stats["time"] = live_data["open_time"].iloc[-1]
+
+    inference_pipeline_output = pd.read_csv(project_path + "data/07_model_output/model_output_inference.csv")
+    stats["prediction"] = inference_pipeline_output["prediction"].iloc[-1]
+    stats["prev_prediction"] = inference_pipeline_output["prediction"].iloc[-2]
+
+    stats["data"] = inference_pipeline_output[["open_time", "prediction"]]
+
+    stats["GKHV"] = inference_pipeline_output["Garman_Klass_HV_4"].iloc[-1]
+    stats["prev_GKHV"] = inference_pipeline_output["Garman_Klass_HV_4"].iloc[-2]
+    stats["bbw"] = inference_pipeline_output["bbw%"].iloc[-1]
+    stats["prev_bbw"] = inference_pipeline_output["bbw%"].iloc[-2]
+    stats["coef"] = inference_pipeline_output["coefs"].iloc[-1]
+    stats["prev_coef"] = inference_pipeline_output["coefs"].iloc[-2]
+    return stats
