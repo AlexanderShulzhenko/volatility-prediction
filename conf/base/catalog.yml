@@ -50,3 +50,20 @@ clf:
 model_output_test:
   type: pandas.CSVDataset
   filepath: data/07_model_output/model_output_test.csv
+
+# inference
+klines:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/klines.csv
+
+klines_preprocessed:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/klines_preprocessed.pq
+
+inference_master_table:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/inference_master_table.csv
+
+model_output_inference:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_output_inference.csv

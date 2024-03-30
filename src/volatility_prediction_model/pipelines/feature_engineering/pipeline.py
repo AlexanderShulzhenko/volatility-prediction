@@ -34,9 +34,9 @@ def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
             node(
                 func=fe_stochastic,
                 inputs=[
-                    "master_list_cleaned",
                     "concatenated_candlestick_data",
                     "inversed_covaricance_dict",
+                    "master_list_cleaned",
                 ],
                 outputs="features_stochastic",
                 name="fe_stochastic_node",
