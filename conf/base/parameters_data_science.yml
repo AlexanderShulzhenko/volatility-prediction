@@ -11,9 +11,9 @@ model_options:
     - returns_4
     - bbw%
     - coefs
-    - skews
-    - kurtosises
-    - percentile90
+    # - skews
+    # - kurtosises
+    # - percentile90
     - p_value_KS_Matern32
     - p_value_SW_Matern32
     - lengthscale_OU
