@@ -63,3 +63,7 @@ klines_preprocessed:
 inference_master_table:
   type: pandas.CSVDataset
   filepath: data/05_model_input/inference_master_table.csv
+
+model_output_inference:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_output_inference.csv

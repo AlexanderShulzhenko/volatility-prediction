@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import pandas as pd
+from lightgbm import LGBMClassifier
 
 from ..feature_engineering.nodes import (
     fe_candlestick_data,
@@ -45,5 +46,11 @@ def generate_features(data: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFram
     return inference_master_table
 
 
-def run_model(features: Any, model: Any) -> None:
-    pass
+def run_model(clf: LGBMClassifier, inference_master_table: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFrame:
+    model_input_table = inference_master_table[params["features"]]
+    y_pred = clf.predict_proba(model_input_table)
+
+    predictions = inference_master_table.copy()
+    predictions["prediction"] = y_pred[:, 1]
+
+    return predictions

@@ -1,6 +1,6 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import generate_features, preprocess_data
+from .nodes import generate_features, preprocess_data, run_model
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
@@ -17,6 +17,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
                 inputs=["klines_preprocessed", "params:model_options"],
                 outputs="inference_master_table",
                 name="generate_features",
+            ),
+            node(
+                func=run_model,
+                inputs=["clf", "inference_master_table", "params:model_options"],
+                outputs="model_output_inference",
+                name="run_model_inference",
             ),
         ]
     )
