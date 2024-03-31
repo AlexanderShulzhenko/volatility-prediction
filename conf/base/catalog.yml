@@ -58,6 +58,10 @@ calibrated_clf:
   versioned: false
 
 # Model output
+model_output_train:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_output_train.csv
+
 model_output_test:
   type: pandas.CSVDataset
   filepath: data/07_model_output/model_output_test.csv
