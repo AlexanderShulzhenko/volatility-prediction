@@ -33,6 +33,7 @@ line1 = st.sidebar.empty()
 line2 = st.sidebar.empty()
 
 
+# metrics and candlesticks
 async def streamlit_plot(live_data):
     # create two columns for charts
     with live_stats.container():
@@ -70,6 +71,7 @@ async def streamlit_plot(live_data):
         st.write(fig)
 
 
+# model upd metrics, feature values, model predictions barchart
 async def plot_model(live_data):
     stats = await get_model_stats(live_data)
     with model_stats.container():
@@ -107,6 +109,8 @@ async def plot_model(live_data):
             delta=round(stats["coef"] - stats["prev_coef"], 1),
         )
 
+        st.image("/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/inference_waterfall.png")
+
     with pred_stats.container():
         data = stats["data"][-30:].reset_index(drop=True)
         # Add one more row to match the new "growing" candlestick
@@ -121,6 +125,9 @@ async def plot_model(live_data):
             x=data["open_time"],
             y=data["prediction"],
         )
+
+        st.markdown("### Latest predicted values")
+
         fig = go.Figure(data=bar, layout={"xaxis": {"rangeslider": {"visible": False}}})
         st.write(fig)
 

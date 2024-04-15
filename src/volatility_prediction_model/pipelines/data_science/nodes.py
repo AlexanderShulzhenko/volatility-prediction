@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, Tuple
 
 import pandas as pd
+import shap
 from lightgbm import LGBMClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import roc_auc_score
@@ -30,6 +31,16 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series, parameters: Dict[str,
     )
     clf.fit(X_train, y_train)
     return clf
+
+
+def explain_model(model: LGBMClassifier, data: pd.DataFrame) -> shap.TreeExplainer:
+    explainer = shap.TreeExplainer(
+        model=model,
+        data=data,
+        feature_perturbation="interventional",
+        model_output="probability",
+    )
+    return explainer
 
 
 def calibrate_model(clf: LGBMClassifier, X_train: pd.DataFrame, y_train: pd.Series) -> CalibratedClassifierCV:

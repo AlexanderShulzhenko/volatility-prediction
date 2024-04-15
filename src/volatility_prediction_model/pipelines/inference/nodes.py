@@ -1,6 +1,8 @@
 from typing import Any, Dict
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import shap
 from sklearn.calibration import CalibratedClassifierCV
 
 from ..feature_engineering.nodes import (
@@ -58,3 +60,15 @@ def run_model(
     predictions["prediction"] = y_pred[:, 1]
 
     return predictions
+
+
+def explain_model(
+    explainer: shap.TreeExplainer,
+    data: pd.DataFrame,
+    params: Dict[str, Any],
+) -> None:
+    shap_values = explainer(data[params["features"]])
+    fig, ax = plt.subplots()
+    shap.plots.waterfall(shap_values[-1], show=False)
+    fig.tight_layout()
+    fig.savefig("/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/inference_waterfall.png")

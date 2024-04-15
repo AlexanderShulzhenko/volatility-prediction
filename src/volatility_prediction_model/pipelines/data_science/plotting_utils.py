@@ -1,8 +1,10 @@
+# TODO: check if plt.close() are needed
 import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import shap
 from lightgbm import LGBMClassifier
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.metrics import (
@@ -13,9 +15,11 @@ from sklearn.metrics import (
 logger = logging.getLogger(__name__)
 
 
+PATH = "/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/"
+
+
 def save_fig(fig: plt.figure, name: str) -> None:
-    path = "/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/"
-    fig.savefig(path + name + ".png")
+    fig.savefig(PATH + name + ".png")
 
 
 def plot_roc_auc(model_output_train: pd.DataFrame, model_output_test: pd.DataFrame) -> plt.figure:
@@ -36,7 +40,7 @@ def plot_roc_auc(model_output_train: pd.DataFrame, model_output_test: pd.DataFra
         ax[i].plot([0, 1], [0, 1], color="gray", linestyle="--")
 
         ax[i].title.set_text(f"{labels[i]} \n AUC: " + str(round(100 * auc(1 - tprs, 1 - fprs), 1)))
-
+    plt.close()
     return fig
 
 
@@ -59,6 +63,7 @@ def plot_feature_importances(clf: LGBMClassifier) -> plt.figure:
     ax.invert_yaxis()
 
     fig.tight_layout()
+    plt.close()
     return fig
 
 
@@ -82,8 +87,8 @@ def plot_buckets(model_output_train: pd.DataFrame, model_output_test: pd.DataFra
         ax[i].set_xlabel("bucket number")
         ax[i].set_ylabel("bad rate")
         ax[i].title.set_text(labels[i])
-
-        return fig
+    plt.close()
+    return fig
 
 
 def plot_calibration_curve(
@@ -114,12 +119,40 @@ def plot_calibration_curve(
     ax.legend()
     ax.set_xlabel("predicted probability")
     ax.set_ylabel("true probability")
+    plt.close()
+    return fig
 
+
+def plot_partial_dependencies(model: LGBMClassifier, data: pd.DataFrame) -> plt.figure:
+    fig, ax = shap.partial_dependence_plot(
+        ind=0,
+        model=model.predict,
+        data=data,
+        model_expected_value=True,
+        feature_expected_value=True,
+        show=False,
+        ice=False,
+    )
+    plt.close()
+    return fig
+
+
+def plot_summary(explainer: shap.TreeExplainer, data: pd.DataFrame) -> plt.figure:
+    shap_values = explainer(data)
+
+    fig, ax = plt.subplots()
+    shap.summary_plot(
+        shap_values=shap_values,
+        show=False,
+    )
+    fig.tight_layout()
+    plt.close()
     return fig
 
 
 def generate_plots(
     clf: LGBMClassifier,
+    explainer: shap.TreeExplainer,
     X_train: pd.DataFrame,
     model_output_train: pd.DataFrame,
     model_output_test: pd.DataFrame,
@@ -140,4 +173,11 @@ def generate_plots(
     fig = plot_calibration_curve(clf, X_train, model_output_train, model_output_test)
     save_fig(fig, "calibration_curve")
     logger.info("Calibration curve plot created")
+    # SHAP
+    fig = plot_partial_dependencies(clf, X_train)
+    save_fig(fig, "PDP")
+    logger.info("PDP created")
+    fig = plot_summary(explainer, X_train)
+    save_fig(fig, "summary")
+    logger.info("Summary plot created")
     return

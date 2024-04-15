@@ -1,1 +1,1 @@
-{"feature_table": {"rows": 2605, "columns": 51, "file_size": 934759}, "X_train": {"rows": 2000, "columns": 9}, "X_test": {"rows": 605, "columns": 9}, "model_output_train": {"rows": 2000, "columns": 11, "file_size": 309827}, "model_output_test": {"rows": 605, "columns": 11, "file_size": 94581}}
+{"klines": {"rows": 100, "columns": 18, "file_size": 15765}, "klines_preprocessed": {"rows": 100, "columns": 18, "file_size": 21401}, "inference_master_table": {"rows": 100, "columns": 11, "file_size": 13293}, "model_output_inference": {"rows": 100, "columns": 12, "file_size": 14552}}

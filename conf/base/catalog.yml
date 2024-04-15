@@ -52,6 +52,11 @@ clf:
   filepath: data/06_models/clf.pickle
   versioned: false
 
+explainer:
+  type: pickle.PickleDataset
+  filepath: data/06_models/explainer.pickle
+  versioned: false
+
 calibrated_clf:
   type: pickle.PickleDataset
   filepath: data/06_models/calibrated_clf.pickle
