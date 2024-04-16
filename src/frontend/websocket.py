@@ -109,7 +109,8 @@ async def plot_model(live_data):
             delta=round(stats["coef"] - stats["prev_coef"], 1),
         )
 
-        st.image("/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/inference_waterfall.png")
+        st.markdown("### Uncalibrated classifier explanation")
+        st.image("data/08_reporting/inference_waterfall.png")
 
     with pred_stats.container():
         data = stats["data"][-30:].reset_index(drop=True)

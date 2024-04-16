@@ -68,7 +68,8 @@ def explain_model(
     params: Dict[str, Any],
 ) -> None:
     shap_values = explainer(data[params["features"]])
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(1, 1, dpi=300)
     shap.plots.waterfall(shap_values[-1], show=False)
     fig.tight_layout()
     fig.savefig("data/08_reporting/inference_waterfall.png")
+    return
