@@ -45,6 +45,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
                     "X_train",
                     "model_output_train",
                     "model_output_test",
+                    "params:model_options",
                 ],
                 outputs=None,
                 name="generate_plots_node",

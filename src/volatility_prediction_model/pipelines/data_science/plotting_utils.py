@@ -1,5 +1,6 @@
 # TODO: check if plt.close() are needed
 import logging
+from typing import Any, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,7 +16,7 @@ from sklearn.metrics import (
 logger = logging.getLogger(__name__)
 
 
-PATH = "/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/"
+PATH = "data/08_reporting/"
 
 
 def save_fig(fig: plt.figure, name: str) -> None:
@@ -123,9 +124,9 @@ def plot_calibration_curve(
     return fig
 
 
-def plot_partial_dependencies(model: LGBMClassifier, data: pd.DataFrame) -> plt.figure:
+def plot_partial_dependencies(model: LGBMClassifier, data: pd.DataFrame, feature: str) -> plt.figure:
     fig, ax = shap.partial_dependence_plot(
-        ind=0,
+        ind=feature,
         model=model.predict,
         data=data,
         model_expected_value=True,
@@ -141,10 +142,7 @@ def plot_summary(explainer: shap.TreeExplainer, data: pd.DataFrame) -> plt.figur
     shap_values = explainer(data)
 
     fig, ax = plt.subplots()
-    shap.summary_plot(
-        shap_values=shap_values,
-        show=False,
-    )
+    shap.summary_plot(shap_values=shap_values, show=False)
     fig.tight_layout()
     plt.close()
     return fig
@@ -156,6 +154,7 @@ def generate_plots(
     X_train: pd.DataFrame,
     model_output_train: pd.DataFrame,
     model_output_test: pd.DataFrame,
+    parameters: Dict[str, Any],
 ) -> None:
     # ROC-curve
     fig = plot_roc_auc(model_output_train, model_output_test)
@@ -174,9 +173,10 @@ def generate_plots(
     save_fig(fig, "calibration_curve")
     logger.info("Calibration curve plot created")
     # SHAP
-    fig = plot_partial_dependencies(clf, X_train)
-    save_fig(fig, "PDP")
-    logger.info("PDP created")
+    for feature in parameters["features"]:
+        fig = plot_partial_dependencies(clf, X_train, feature)
+        save_fig(fig, f"pdp/{feature}")
+    logger.info("PDPs created")
     fig = plot_summary(explainer, X_train)
     save_fig(fig, "summary")
     logger.info("Summary plot created")

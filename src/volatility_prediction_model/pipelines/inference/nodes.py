@@ -71,4 +71,4 @@ def explain_model(
     fig, ax = plt.subplots()
     shap.plots.waterfall(shap_values[-1], show=False)
     fig.tight_layout()
-    fig.savefig("/Users/alexshulzhenko/PycharmProjects/model/data/08_reporting/inference_waterfall.png")
+    fig.savefig("data/08_reporting/inference_waterfall.png")
