@@ -1,3 +1,4 @@
+![streamlit-logo-secondary-colormark-darktext](https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/f3feed17-e8a6-44fc-93f7-7de2798d0ab6)
 # Volatility model interface
 
 Volatility model interface is powered by Streamlit, which allows to create interactive web-applications. Backend interface relies on the Kedro inference pipeline, which calls it using `runner.py` functionality.
