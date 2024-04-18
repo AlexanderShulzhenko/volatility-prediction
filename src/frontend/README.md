@@ -9,3 +9,5 @@ To start the web-application use the following command in the terminal:
 ```
 streamlit run src/frontend/websocket.py
 ```
+## Interface snapshot
+<img width="1432" alt="Снимок экрана 2024-04-18 в 13 04 26" src="https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/dcdff045-35c5-4571-93a9-1d94db7ec5c7">
