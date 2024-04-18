@@ -1,6 +1,7 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import evaluate_model, split_data, train_model
+from .nodes import calibrate_model, evaluate_model, explain_model, split_data, train_model
+from .plotting_utils import generate_plots
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
@@ -19,10 +20,35 @@ def create_pipeline(**kwargs) -> Pipeline:  # type: ignore
                 name="train_model_node",
             ),
             node(
+                func=explain_model,
+                inputs=["clf", "X_train"],
+                outputs="explainer",
+                name="explain_model_node",
+            ),
+            node(
+                func=calibrate_model,
+                inputs=["clf", "X_train", "y_train"],
+                outputs="calibrated_clf",
+                name="calibrate_model_node",
+            ),
+            node(
                 func=evaluate_model,
-                inputs=["clf", "X_train", "X_test", "y_train", "y_test"],
-                outputs="model_output_test",
+                inputs=["calibrated_clf", "X_train", "X_test", "y_train", "y_test"],
+                outputs=["model_output_train", "model_output_test"],
                 name="evaluate_model_node",
+            ),
+            node(
+                func=generate_plots,
+                inputs=[
+                    "clf",
+                    "explainer",
+                    "X_train",
+                    "model_output_train",
+                    "model_output_test",
+                    "params:model_options",
+                ],
+                outputs=None,
+                name="generate_plots_node",
             ),
         ]
     )

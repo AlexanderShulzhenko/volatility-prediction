@@ -1,10 +1,7 @@
+# Raw data
 master_list:
   type: pandas.CSVDataset
   filepath: data/01_raw/master_list.csv
-
-master_list_cleaned:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/master_list_cleaned.pq
 
 candlesticks_partitioned:
   type: partitions.PartitionedDataset
@@ -18,10 +15,16 @@ trades_partitioned:
   dataset: pandas.ParquetDataset
   filename_suffix: ".parquet"
 
+# Intermediate data
+master_list_cleaned:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/master_list_cleaned.pq
+
 concatenated_candlestick_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/concatenated_candlestick_data.pq
 
+# Features
 features_candlestick_data:
   type: pandas.ParquetDataset
   filepath: data/04_feature/features_candlestick_data.pq
@@ -38,14 +41,31 @@ features_trades:
   type: pandas.ParquetDataset
   filepath: data/04_feature/features_trades.pq
 
+# Model input
 feature_table:
   type: pandas.ParquetDataset
   filepath: data/05_model_input/feature_table.pq
 
+# Models
 clf:
   type: pickle.PickleDataset
   filepath: data/06_models/clf.pickle
   versioned: false
+
+explainer:
+  type: pickle.PickleDataset
+  filepath: data/06_models/explainer.pickle
+  versioned: false
+
+calibrated_clf:
+  type: pickle.PickleDataset
+  filepath: data/06_models/calibrated_clf.pickle
+  versioned: false
+
+# Model output
+model_output_train:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_output_train.csv
 
 model_output_test:
   type: pandas.CSVDataset

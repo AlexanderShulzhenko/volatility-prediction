@@ -1,1 +1,1 @@
-{"klines": {"rows": 2976, "columns": 13, "file_size": 416665}, "klines_preprocessed": {"rows": 2976, "columns": 13, "file_size": 264737}, "inference_master_table": {"rows": 2976, "columns": 11, "file_size": 521789}, "model_output_inference": {"rows": 2976, "columns": 12, "file_size": 558227}}
+{"klines": {"rows": 99, "columns": 18, "file_size": 15508}, "klines_preprocessed": {"rows": 99, "columns": 18, "file_size": 20924}, "inference_master_table": {"rows": 99, "columns": 11, "file_size": 13099}, "model_output_inference": {"rows": 99, "columns": 12, "file_size": 14370}}

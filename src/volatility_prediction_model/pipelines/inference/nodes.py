@@ -1,7 +1,9 @@
 from typing import Any, Dict
 
+import matplotlib.pyplot as plt
 import pandas as pd
-from lightgbm import LGBMClassifier
+import shap
+from sklearn.calibration import CalibratedClassifierCV
 
 from ..feature_engineering.nodes import (
     fe_candlestick_data,
@@ -46,11 +48,28 @@ def generate_features(data: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFram
     return inference_master_table
 
 
-def run_model(clf: LGBMClassifier, inference_master_table: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFrame:
+def run_model(
+    calibrated_clf: CalibratedClassifierCV,
+    inference_master_table: pd.DataFrame,
+    params: Dict[str, Any],
+) -> pd.DataFrame:
     model_input_table = inference_master_table[params["features"]]
-    y_pred = clf.predict_proba(model_input_table)
+    y_pred = calibrated_clf.predict_proba(model_input_table)
 
     predictions = inference_master_table.copy()
     predictions["prediction"] = y_pred[:, 1]
 
     return predictions
+
+
+def explain_model(
+    explainer: shap.TreeExplainer,
+    data: pd.DataFrame,
+    params: Dict[str, Any],
+) -> None:
+    shap_values = explainer(data[params["features"]])
+    fig, ax = plt.subplots(1, 1, dpi=300)
+    shap.plots.waterfall(shap_values[-1], show=False)
+    fig.tight_layout()
+    fig.savefig("data/08_reporting/inference_waterfall.png")
+    return
