@@ -2,6 +2,7 @@
 ![repo_preview_wide_new](https://github.com/AlexanderShulzhenko/volatility-prediction/assets/80621503/167a7bfc-1d19-4f5c-897b-56bbb65b774c)
 
 ## Intro
+### Backend
 This repo is a PoC stated in my paper, that could be found at ??. Model for predicting short-term volatility fluctuations is trained and explained, as well as a data processing pipeline, which includes data collection, preprocessing and feature engineering. We use Kedro as a framework to wrap all the code into the maintainable and easily configured pipelines. Essentially, project could be expressed in four main pipelines:
 - [**Data collection**](https://github.com/AlexanderShulzhenko/volatility-prediction/blob/main/src/volatility_prediction_model/pipelines/data_collection): optimized pipeline utilizing async requests (via `aiohttp`) to collect data using Binance REST API;
 - [**Data combination**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/data_combination): combine klines `kedro.PartitionedDataset` into one `pd.DataFrame` for further analysis;
@@ -9,6 +10,10 @@ This repo is a PoC stated in my paper, that could be found at ??. Model for pred
 - [**Data science**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/volatility_prediction_model/pipelines/data_science): build, train and calibrate the model as well as create inference table for predictions assesment.
 
 ***Note***: for more detailed documentation refer to README files in the pipelines folder of current repo.
+
+### Frontend
+Volatility prediction model is equipped with the interface that allows to monitor model predictions in the real time.
+- [**Interface**](https://github.com/AlexanderShulzhenko/volatility-prediction/tree/main/src/frontend): web application powered by Streamlit to plot model predictions as well as other useful stats.
 
 ## Kedro usage
 To run the model from end-to-end follow these steps:
