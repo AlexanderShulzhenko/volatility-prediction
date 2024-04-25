@@ -1,5 +1,6 @@
 """Util functions for frontend"""
 import datetime as dt
+from pathlib import Path
 from typing import Any, Dict
 
 import pandas as pd
@@ -41,7 +42,7 @@ def populate_data(num_records: int, symbol: str, interval: str) -> pd.DataFrame:
         data: dataframe with klines data
     """
     interval_mins = int(interval[:-1])
-    time = dt.datetime.now() - dt.timedelta(hours=4)
+    time = dt.datetime.now() - dt.timedelta(hours=4)  # TODO: check time delta
     print(str(time - dt.timedelta(minutes=num_records * interval_mins)))
     klines = client.get_historical_klines(
         symbol=symbol,
@@ -116,11 +117,10 @@ async def get_model_stats(live_data: pd.DataFrame) -> Dict[str, Any]:
     Returns:
         stats: dictionary with needed stats
     """
-    project_path = "/Users/alexshulzhenko/PycharmProjects/model/"
-
     # Save newest data to dir
     live_data.to_csv("data/02_intermediate/klines.csv")
     # Run kedro pipeline
+    project_path = Path(__file__).parents[2]
     run_kedro_pipeline(project_path, "inference")
 
     # Reprting
