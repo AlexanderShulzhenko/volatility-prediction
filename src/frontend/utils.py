@@ -119,7 +119,7 @@ async def get_model_stats(live_data: pd.DataFrame) -> Dict[str, Any]:
     project_path = "/Users/alexshulzhenko/PycharmProjects/model/"
 
     # Save newest data to dir
-    live_data.to_csv(project_path + "data/02_intermediate/klines.csv")
+    live_data.to_csv("data/02_intermediate/klines.csv")
     # Run kedro pipeline
     run_kedro_pipeline(project_path, "inference")
 
@@ -127,7 +127,7 @@ async def get_model_stats(live_data: pd.DataFrame) -> Dict[str, Any]:
     stats = {}
     stats["time"] = live_data["open_time"].iloc[-1]
 
-    inference_pipeline_output = pd.read_csv(project_path + "data/07_model_output/model_output_inference.csv")
+    inference_pipeline_output = pd.read_csv("data/07_model_output/model_output_inference.csv")
     stats["prediction"] = inference_pipeline_output["prediction"].iloc[-1]
     stats["prev_prediction"] = inference_pipeline_output["prediction"].iloc[-2]
 

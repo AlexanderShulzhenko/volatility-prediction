@@ -12,5 +12,8 @@ data/*/*
 # debugger
 .vscode
 
+# other
+__pycache__/
+
 # exceptions
 !.gitkeep

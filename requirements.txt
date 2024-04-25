@@ -3,6 +3,7 @@ kedro-datasets>=2.0.0
 kedro-viz~=7.1.0
 kedro>=0.19.2
 lightgbm>=4.3.0
+matplotlib>=3.8.3
 numba>=0.59.0
 numpy>=1.26.3
 pandas>=2.2.0
