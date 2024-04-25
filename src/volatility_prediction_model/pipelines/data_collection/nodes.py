@@ -13,9 +13,9 @@ from tqdm import trange
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-api_key = "<your_api_key>"
-api_secret = "your_secret_api_key"
-client = Client(api_key, api_secret)
+API_KEY = "<your_api_key>"
+API_SECRET = "your_secret_api_key"
+client = Client(API_KEY, API_SECRET)
 
 num_days = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
 
@@ -173,4 +173,4 @@ def generate_api_calls_plot(api_load_tracker: List[List[float]]) -> None:
     ax[1].set_ylabel("Number of API calls", fontsize=15)
 
     plt.tight_layout()
-    plt.savefig("API_calls.png")
+    fig.savefig("API_calls.png")

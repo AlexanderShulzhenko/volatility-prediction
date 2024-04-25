@@ -16,7 +16,7 @@ from ..schemas.trades_data_schema import trades_data_schema
 logger = logging.getLogger(__name__)
 
 
-class Ornstein_Uhlenbeck(gpflow.kernels.IsotropicStationary):  # type: ignore
+class OrnsteinUhlenbeck(gpflow.kernels.IsotropicStationary):  # type: ignore
     def K_r2(self, r2: float) -> Any:
         return self.variance * tf.exp(-tf.sqrt(r2))
 
@@ -97,7 +97,7 @@ def get_inv_cov() -> Dict[str, Any]:
 
     kernels = {
         "Matern": gpflow.kernels.Matern32,
-        "Ornstein_Uhlenbeck": Ornstein_Uhlenbeck,
+        "Ornstein_Uhlenbeck": OrnsteinUhlenbeck,
     }
 
     for k_type in kernels.keys():

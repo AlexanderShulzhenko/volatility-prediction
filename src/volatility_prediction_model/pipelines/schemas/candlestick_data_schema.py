@@ -1,3 +1,4 @@
+"""Data schema for klines data"""
 import numpy as np
 from pandera import Column, DataFrameSchema
 

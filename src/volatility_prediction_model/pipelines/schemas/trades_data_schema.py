@@ -1,3 +1,4 @@
+"""Data schema for trades data"""
 from pandera import Column, DataFrameSchema
 
 trades_data_schema = DataFrameSchema(

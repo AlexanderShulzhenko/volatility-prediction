@@ -1,0 +1,9 @@
+[BASIC]
+good-names=X,X_train,X_test,Y,Y_train,Y_test,X_pad,X_pad_t,Xplot
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=10
+max-locals=30

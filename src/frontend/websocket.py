@@ -1,3 +1,4 @@
+"""UI for the model inference"""
 import asyncio
 import datetime as dt
 import json
@@ -33,8 +34,12 @@ line1 = st.sidebar.empty()
 line2 = st.sidebar.empty()
 
 
-# metrics and candlesticks
 async def streamlit_plot(live_data):
+    """Plot data metrics and candlesticks.
+
+    Args:
+        live_data: dataframe with live klines data
+    """
     # create two columns for charts
     with live_stats.container():
         kpi1, kpi2, kpi3 = st.columns(3)
@@ -71,8 +76,12 @@ async def streamlit_plot(live_data):
         st.write(fig)
 
 
-# model upd metrics, feature values, model predictions barchart
 async def plot_model(live_data):
+    """Plot model metrics, feature values, model predictions barchart.
+
+    Args:
+        live_data: dataframe with live klines data
+    """
     stats = await get_model_stats(live_data)
     with model_stats.container():
         kpi1, kpi2, kpi3 = st.columns(3)
@@ -122,18 +131,19 @@ async def plot_model(live_data):
             }
         )
         data = pd.concat([data, last_row]).reset_index(drop=True)
-        bar = go.Bar(
+        barchart = go.Bar(
             x=data["open_time"],
             y=data["prediction"],
         )
 
         st.markdown("### Latest predicted values")
 
-        fig = go.Figure(data=bar, layout={"xaxis": {"rangeslider": {"visible": False}}})
+        fig = go.Figure(data=barchart, layout={"xaxis": {"rangeslider": {"visible": False}}})
         st.write(fig)
 
 
 async def f_timer():
+    """Plot timer to model update."""
     while True:
         mm = 15 - dt.datetime.now().minute % 15 - 1
         ss = 60 - dt.datetime.now().second - 1
@@ -144,6 +154,7 @@ async def f_timer():
 
 # TODO: properly cut klines (no need to store full df)
 async def listen_to_stream():
+    """Get live data from websocket."""
     data = []
     init_klines = populate_data(num_records=100, symbol="BTCUSDT", interval="15m")
     state = len(init_klines) - 1
@@ -174,6 +185,7 @@ async def listen_to_stream():
 
 
 async def run_widgets():
+    """Run widgets async."""
     await asyncio.gather(listen_to_stream(), f_timer())
 
 

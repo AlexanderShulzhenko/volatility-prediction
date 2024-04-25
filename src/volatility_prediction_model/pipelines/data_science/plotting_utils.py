@@ -180,4 +180,3 @@ def generate_plots(
     fig = plot_summary(explainer, X_train)
     save_fig(fig, "summary")
     logger.info("Summary plot created")
-    return

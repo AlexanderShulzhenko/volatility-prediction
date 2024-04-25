@@ -1,5 +1,6 @@
+"""Util functions for frontend"""
 import datetime as dt
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import pandas as pd
 from binance import Client
@@ -29,7 +30,16 @@ KLINES_COLS = [
 ]
 
 
-def populate_data(num_records: int, symbol: str, interval: str) -> List[Dict[str, Any]]:
+def populate_data(num_records: int, symbol: str, interval: str) -> pd.DataFrame:
+    """Populate klines data from now with num_records rows.
+
+    Args:
+        num_records: number of records to be fetched
+        symbol: trading symbol to fetch records for, e.g. BTCUSDT
+        interval: interval to fetch records for, e.g. 15m
+    Returns:
+        data: dataframe with klines data
+    """
     interval_mins = int(interval[:-1])
     time = dt.datetime.now() - dt.timedelta(hours=4)
     print(str(time - dt.timedelta(minutes=num_records * interval_mins)))
@@ -64,7 +74,14 @@ def populate_data(num_records: int, symbol: str, interval: str) -> List[Dict[str
     return data
 
 
-def get_metrics(live_data):
+def get_metrics(live_data: pd.DataFrame) -> Dict[str, Any]:
+    """Get metrics from the klines data.
+
+    Args:
+        live_data: dataframe with live klines data
+    Returns:
+        metrics: dictionary with needed metrics
+    """
     metrics = {}
     last_price = live_data["close"].iloc[-1]
     last_volume = live_data["bav"].iloc[-1]
@@ -92,6 +109,13 @@ def get_metrics(live_data):
 
 
 async def get_model_stats(live_data: pd.DataFrame) -> Dict[str, Any]:
+    """Get stats after the model run.
+
+    Args:
+        live_data: dataframe with live klines data
+    Returns:
+        stats: dictionary with needed stats
+    """
     project_path = "/Users/alexshulzhenko/PycharmProjects/model/"
 
     # Save newest data to dir
